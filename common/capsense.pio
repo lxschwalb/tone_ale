@@ -1,0 +1,40 @@
+.program capsense
+
+.wrap_target
+    wait 1 pin 0
+    loop:
+        jmp pin, done
+        jmp y--, loop
+    done:
+        mov isr, !y
+        mov y, !null
+        push noblock
+
+    set pins, 0
+.wrap
+
+% c-sdk {
+
+void capsense_program_init(PIO pio, uint sm, uint offset, uint send_pin, uint sense_pin) {
+
+    pio_sm_config c = capsense_program_get_default_config(offset);
+
+    sm_config_set_out_pins(&c, send_pin, 1);
+    sm_config_set_set_pins(&c, send_pin, 1);
+    sm_config_set_in_pins(&c, send_pin);
+    sm_config_set_jmp_pin(&c, sense_pin);
+
+    pio_gpio_init(pio, send_pin);
+
+    pio_sm_set_consecutive_pindirs(pio, sm, send_pin, 1, true);
+    pio_sm_set_consecutive_pindirs(pio, sm, sense_pin, 1, false);
+
+    pio_sm_init(pio, sm, offset, &c);
+}
+
+uint32_t sense_cap(PIO pio, uint sm) {
+    uint32_t x = pio_sm_get(pio, sm);
+    pio_sm_exec(pio, sm, 0b1110000000000001); // set send pin to 1
+    return x;
+}
+%}

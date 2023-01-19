@@ -1,0 +1,90 @@
+.program i2cv_clocks
+.side_set 1
+
+.wrap_target
+        mov y, isr          side 0x1
+        set pins, 1         side 0x0
+    ws1_loop:
+        nop                 side 0x1
+        jmp y--, ws1_loop   side 0x0
+        mov y, x            side 0x1
+        set pins, 0         side 0x0
+    ws0_loop:
+        nop                 side 0x1
+        jmp y--, ws0_loop   side 0x0
+.wrap
+
+.program i2cv_bidirectional
+
+.wrap_target
+
+    start:
+        pull
+        wait 1 gpio 14
+        in pins, 1
+        push noblock
+        wait 0 gpio 14
+        out pins, 1
+        jmp pin, ws1_loop
+
+    ws0_loop:
+        wait 1 gpio 14
+        in pins, 1
+        wait 0 gpio 14
+        out pins, 1
+        jmp pin, start
+        jmp ws0_loop
+
+    ws1_loop:
+        wait 1 gpio 14
+        in pins, 1
+        wait 0 gpio 14
+        out pins, 1
+        jmp pin, ws1_loop
+.wrap
+
+
+% c-sdk {
+
+void i2cv_clocks_program_init(PIO pio, uint sm, uint offset, uint clk, uint ws) {
+
+    pio_sm_config c = i2cv_clocks_program_get_default_config(offset);
+
+    sm_config_set_sideset_pins(&c, clk);
+    sm_config_set_set_pins(&c, ws, 1);
+
+    pio_gpio_init(pio, clk);
+    pio_gpio_init(pio, ws);
+
+    pio_sm_set_consecutive_pindirs(pio, sm, clk, 1, true);
+    pio_sm_set_consecutive_pindirs(pio, sm, ws, 1, true);
+
+    pio_sm_init(pio, sm, offset, &c);
+}
+
+void i2cv_clocks_set_ws_widths(PIO pio, uint sm, uint high_width, uint low_width) {
+    if ((high_width >=2) & (low_width >= 2)) {
+        pio_sm_exec(pio, sm, 0b1110000000100000 | (high_width-2));  // set x to high_width
+        pio_sm_exec(pio, sm, 0b1010000011000001);                   // move x into isr
+        pio_sm_exec(pio, sm, 0b1110000000100000 | (low_width-2));   // set x to low_width
+    }
+}
+
+void i2cv_bidirectional_program_init(PIO pio, uint sm, uint offset, uint out_pin, uint ws, uint in_pin) {
+    pio_sm_config c = i2cv_bidirectional_program_get_default_config(offset);
+
+    sm_config_set_out_pins(&c, out_pin, 1);
+    sm_config_set_in_pins(&c, in_pin);
+    sm_config_set_jmp_pin(&c, ws);
+
+    pio_gpio_init(pio, out_pin);
+    pio_gpio_init(pio, in_pin);
+
+    pio_sm_set_consecutive_pindirs(pio, sm, out_pin, 1, true);
+
+    sm_config_set_out_shift(&c, false, false, 32);
+    sm_config_set_in_shift(&c, false, false, 32);
+
+    pio_sm_init(pio, sm, offset, &c);
+}
+%}
