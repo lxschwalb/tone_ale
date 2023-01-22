@@ -8,14 +8,11 @@
 #include "hardware/pio.h"
 #include "i2cv.pio.h"
 
-#define BUFFSIZE 256 // TODO make resizable
-
 #define ADC_CLK_PIN         11
 #define CLK_PIN             14
 #define WS_PIN              15
 #define I2CV_OUT_PIN        21
 #define I2CV_IN_PIN         13
-#define FREQ_DIV            256
 
 static int32_t *i2cv_tx_buff_ptr;
 static int32_t *i2cv_rx_buff_ptr;
@@ -24,10 +21,10 @@ static int32_t *i2cv_temp_ptr;
 
 static bool buff_ready;
 
-int dma_out_chan = 0;   // TODO autodetect unused dma chan
-int dma_in_chan = 1;    // TODO autodetect unused dma chan
+static int dma_out_chan = dma_claim_unused_channel(true);
+static int dma_in_chan = dma_claim_unused_channel(true);
 
-void dma_handler() {
+void dma_handler() { // TODO align left and right channels
     dma_hw->ints0 = 1u << dma_out_chan;
 
 	i2cv_temp_ptr = i2cv_tx_buff_ptr;
@@ -40,11 +37,11 @@ void dma_handler() {
     dma_channel_set_write_addr(dma_in_chan, i2cv_rx_buff_ptr, true);
 }
 
-void common_i2cv_setup(int buffsize) {
-    static int32_t i2cv_data[BUFFSIZE * 3];
-    i2cv_tx_buff_ptr = i2cv_data;
-    i2cv_rx_buff_ptr = &i2cv_data[buffsize];
-    i2cv_x_buff_ptr = &i2cv_data[buffsize*2];
+void common_i2cv_setup(int32_t *buff, int buffsize, float samplerate) { //TODO try squeeze all sm's into pio0
+    float freq_div = 270000000/(4*24*samplerate);
+    i2cv_tx_buff_ptr = buff;
+    i2cv_rx_buff_ptr = &buff[buffsize];
+    i2cv_x_buff_ptr = &buff[buffsize*2];
 
     uint i2cv_offset = pio_add_program(pio0, &i2cv_bidirectional_program);
     uint i2cv_clk_offset = pio_add_program(pio1, &i2cv_clocks_program);
@@ -57,14 +54,14 @@ void common_i2cv_setup(int buffsize) {
     // Set up state machine that drives CLK and WS pins with appropriate frequencies
     uint i2cv_clk_sm = pio_claim_unused_sm(pio1, true);
     i2cv_clocks_program_init(pio1, i2cv_clk_sm, i2cv_clk_offset, CLK_PIN, WS_PIN);
-    pio_sm_set_clkdiv(pio1, i2cv_clk_sm, FREQ_DIV);
+    pio_sm_set_clkdiv(pio1, i2cv_clk_sm, freq_div);
     i2cv_clocks_set_ws_widths(pio1, i2cv_clk_sm, 24, 24);
     pio_sm_set_enabled(pio1, i2cv_clk_sm, true);
 
     // PCM1808 requires external clock, reuse i2cv_clocks state machine to generate it
     uint adc_clk_sm = pio_claim_unused_sm(pio1, true);
-    i2cv_clocks_program_init(pio1, adc_clk_sm, i2cv_clk_offset, ADC_CLK_PIN, 10);
-    pio_sm_set_clkdiv(pio1, adc_clk_sm, FREQ_DIV>>3);
+    i2cv_clocks_program_init(pio1, adc_clk_sm, i2cv_clk_offset, ADC_CLK_PIN, 10); //TODO remove magic number
+    pio_sm_set_clkdiv(pio1, adc_clk_sm, freq_div/8);
     pio_sm_set_enabled(pio1, adc_clk_sm, true);
 
     // Set up DMA for efficient transfers of buffers
@@ -72,18 +69,18 @@ void common_i2cv_setup(int buffsize) {
     channel_config_set_transfer_data_size(&c, DMA_SIZE_32);
     channel_config_set_read_increment(&c, true);
     channel_config_set_write_increment(&c, false);
-    channel_config_set_dreq(&c, DREQ_PIO0_TX0); //TODO make so that it's not hardcoded to PIO0 sm0
+    channel_config_set_dreq(&c, pio_get_dreq(pio0, i2cv_sm, true));
 
     dma_channel_config c_in = dma_channel_get_default_config(dma_in_chan);
     channel_config_set_transfer_data_size(&c_in, DMA_SIZE_32);
     channel_config_set_read_increment(&c_in, false);
     channel_config_set_write_increment(&c_in, true);
-    channel_config_set_dreq(&c_in, DREQ_PIO0_RX0); //TODO make so that it's not hardcoded to PIO0 sm0
+    channel_config_set_dreq(&c_in, pio_get_dreq(pio0, i2cv_sm, false));
 
     dma_channel_configure(
         dma_out_chan,
         &c,
-        &pio0_hw->txf[i2cv_sm], //TODO is this correct?
+        &pio0_hw->txf[i2cv_sm],
         i2cv_tx_buff_ptr,
         buffsize,
         false
@@ -93,7 +90,7 @@ void common_i2cv_setup(int buffsize) {
         dma_in_chan,
         &c_in,
         i2cv_rx_buff_ptr,
-        &pio0_hw->rxf[i2cv_sm],  //TODO is this correct?
+        &pio0_hw->rxf[i2cv_sm],
         buffsize,
         false
     );
