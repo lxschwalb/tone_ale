@@ -20,16 +20,16 @@ void common_capsense_setup() {
     pio_sm_set_enabled(pio0, sm, true);
 }
 
-bool capsense_button() {
+bool capsense_button(int threshold) {
     int x = sense_cap(pio0, sm);
 
     static bool pressing = false;
     static bool state = false;
 
-    if(x > 20 && !pressing) {
+    if(x > threshold && !pressing) {
         state = !state;
     }
-    pressing = (x > 20);
+    pressing = (x > threshold);
 
     return state;
 }
