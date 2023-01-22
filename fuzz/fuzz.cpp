@@ -3,30 +3,31 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <stdio.h>
 #include "pico/stdlib.h"
-#include "hardware/clocks.h"
 #include "common.h"
 
-#define BUFFSIZE 256
+#define BUFFSIZE 16
+#define SAMPLE_RATE 48000
 
 static const float clip = 1073741824/2;
 
 int main() {
-    stdio_init_all();
+    int32_t data_buff[BUFFSIZE*3];
+    // stdio_init_all();
     set_sys_clock_khz(270000, true);
     common_pins_setup();
-    common_i2cv_setup(BUFFSIZE);
     common_capsense_setup();
+    common_i2cv_setup(data_buff, BUFFSIZE, SAMPLE_RATE);
 
     float y = 0;
     bool state = false;
     float gain = 40;
+    int32_t *buff = mutable_data();
     while (true) {
-        sleep_us(10);
+        // sleep_us(10);
         if(new_buff())
         {
-            int32_t *buff = mutable_data();
+            buff = mutable_data();
 
             for(int i=0; i<BUFFSIZE; i++) {
                 if(state){
@@ -44,8 +45,8 @@ int main() {
         }
         else
         {
-            sleep_us(100);
-            state = capsense_button();
+            sleep_us(10);
+            state = capsense_button(20);
             set_led(state);
         }
     }
