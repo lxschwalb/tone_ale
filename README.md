@@ -12,13 +12,15 @@ Perhaps you want to alter some effects before uploading it onto the pedal. For e
 
 First set up the Pi Pico SDK according to [this guide](https://www.raspberrypi.com/documentation/microcontrollers/c_sdk.html#sdk-setup)
 
-Open terminal in the main project folder
+Open terminal in the main project folder (called tone_ale) and run the following commands:
 
-Go to the build directory with `cd /build`
+`cp <pico_sdk_path>/external/pico_sdk_import.cmake .` (replace <pico_sdk_path> with wherever you set up the SDK)
 
-Run `cmake ..`
+`cd /build`
 
-Run `make`
+`cmake ..`
+
+`make`
 
 This will compile each effect and place it in "/build/<effect_name>/<effect_name>.uf2". This uf2 file can then directly be uploaded onto the pedal
 
