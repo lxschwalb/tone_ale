@@ -6,11 +6,9 @@
         jmp pin, done
         jmp y--, loop
     done:
+        set pins, 0
         mov isr, !y
-        mov y, !null
         push noblock
-
-    set pins, 0
 .wrap
 
 % c-sdk {
@@ -34,7 +32,8 @@ void capsense_program_init(PIO pio, uint sm, uint offset, uint send_pin, uint se
 
 uint32_t sense_cap(PIO pio, uint sm) {
     uint32_t x = pio_sm_get(pio, sm);
-    pio_sm_exec(pio, sm, 0b1110000000000001); // set send pin to 1
+    pio_sm_exec(pio, sm, pio_encode_mov_not(pio_src_dest::pio_y, pio_src_dest::pio_null));
+    pio_sm_exec(pio, sm, pio_encode_set(pio_src_dest::pio_pins, 1));
     return x;
 }
 %}
