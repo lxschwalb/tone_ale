@@ -7,7 +7,6 @@ if (TARGET tinyusb_device)
 
   target_link_libraries(fuzz
                         pico_stdlib
-                        hardware_clocks
                         common)
 
   target_include_directories(fuzz PUBLIC

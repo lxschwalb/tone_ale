@@ -13,7 +13,20 @@
 #define CLIP_NEG    -536870912
 #define SYSTEM_CLK  270000000
 
+constexpr float double_clip_pos = CLIP_POS*2;
+constexpr float double_clip_neg = CLIP_NEG*2;
+
 static bool state = false;
+
+float fold(float x) {
+    if(x>CLIP_POS){
+        return fold(double_clip_pos - x);
+    }
+    else if(x<CLIP_NEG){
+        return fold(double_clip_neg - x);
+    }
+    else return x;
+}
 
 void interrupt_service_routine() {
     juggle_buffers();
@@ -23,11 +36,7 @@ void interrupt_service_routine() {
 
     for(int i=0; i<BUFFSIZE; i++) {
         if(state){
-            y = (buff[i]<<8)*GAIN;
-            
-            if(y>CLIP_POS){y = CLIP_POS;}
-            if(y<CLIP_NEG){y = CLIP_NEG;}
-
+            y = fold((buff[i]<<8)*GAIN);
             buff[i] = static_cast<int32_t>(y);
         }
         else {

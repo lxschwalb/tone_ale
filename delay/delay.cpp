@@ -6,29 +6,36 @@
 #include "pico/stdlib.h"
 #include "common.h"
 
-#define BUFFSIZE    16
-#define SAMPLE_RATE 48000
-#define GAIN        40.0
-#define CLIP_POS    536870912
-#define CLIP_NEG    -536870912
-#define SYSTEM_CLK  270000000
+#define BUFFSIZE        16
+#define SAMPLE_RATE     48000
+#define SYSTEM_CLK      270000000
+#define DELAYBUFFSIZE   32768
+#define FEEDBACK        true
 
-static bool state = false;
+static bool state = true;
+
+int32_t add_delay(int32_t x) {
+    static int32_t delaybuff[DELAYBUFFSIZE] = {0};
+    static int index = 0;
+
+#if FEEDBACK
+    delaybuff[index] = (delaybuff[index]>>1)+x;
+#else
+    delaybuff[index] = x;
+#endif
+
+    index = (index+1)%DELAYBUFFSIZE;
+
+    return x + delaybuff[index];
+}
 
 void interrupt_service_routine() {
     juggle_buffers();
-
     int32_t *buff = mutable_data();
-    static float y = 0;
 
     for(int i=0; i<BUFFSIZE; i++) {
         if(state){
-            y = (buff[i]<<8)*GAIN;
-            
-            if(y>CLIP_POS){y = CLIP_POS;}
-            if(y<CLIP_NEG){y = CLIP_NEG;}
-
-            buff[i] = static_cast<int32_t>(y);
+            buff[i] = add_delay(buff[i]<<8);
         }
         else {
             buff[i] = buff[i]<<8;
