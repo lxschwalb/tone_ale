@@ -42,5 +42,5 @@ void set_led(bool state){
 }
 
 bool get_led(){
-    gpio_get(LED_PIN);
+    return gpio_get(LED_PIN);
 }

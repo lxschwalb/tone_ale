@@ -187,7 +187,6 @@ void interrupt_service_routine() {
 
 int main() {
     int32_t data_buff[BUFFSIZE*3];
-    // stdio_init_all();    //Uncomment this line for USB com
     set_sys_clock_khz(SYSTEM_CLK/1000, true);
     common_pins_setup();
     common_capsense_setup();
