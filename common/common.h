@@ -11,4 +11,5 @@ void common_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_routi
 int32_t * mutable_data();
 bool capsense_button(int threshold);
 void set_led(bool state);
-void usb_audio_buff_thing(int32_t *buff);
+void usb_audio_buff_broker(int32_t *buff);
+void usb_audio_buff_broker_mute(int32_t *buff);

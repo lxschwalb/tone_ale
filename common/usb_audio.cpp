@@ -150,11 +150,11 @@ uint8_t usb_spk_buff[SPK_BUF_SIZE];
 int32_t spk_buff_index = 0;
 int bytes_read;
 
-void usb_audio_buff_thing(int32_t *buffi) {
+void usb_audio_buff_broker(int32_t *buffi) {
     if (mic_buff_index < MIC_BUF_SIZE)
     {
         usb_mic_buff[mic_buff_index++] = *buffi;
-        usb_mic_buff[mic_buff_index++] = (*buffi >> 8) & 0xFB; //TODO for some reason bit 2 alway has to be 0. Figure out why
+        usb_mic_buff[mic_buff_index++] = *buffi >> 8;
         usb_mic_buff[mic_buff_index++] = *buffi >> 16;
         usb_mic_buff[mic_buff_index++] = *buffi >> 24;
     }
@@ -166,6 +166,22 @@ void usb_audio_buff_thing(int32_t *buffi) {
         *buffi |= (int32_t)usb_spk_buff[spk_buff_index++] << 24;
     }
 }
+
+void usb_audio_buff_broker_mute(int32_t *buffi) {
+    if (mic_buff_index < MIC_BUF_SIZE)
+    {
+        usb_mic_buff[mic_buff_index++] = 0;
+        usb_mic_buff[mic_buff_index++] = 0;
+        usb_mic_buff[mic_buff_index++] = 0;
+        usb_mic_buff[mic_buff_index++] = 0;
+    }
+    if (spk_buff_index < bytes_read)
+    {
+        *buffi = 0;
+        spk_buff_index += 4;
+    }
+}
+
 
 //--------------------------------------------------------------------+
 // Device callbacks
