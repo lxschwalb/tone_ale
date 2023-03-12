@@ -33,3 +33,18 @@ bool capsense_button(int threshold) {
 
     return state;
 }
+
+float capsense_return_percentage_of_max() {
+    static int max = 0;
+    static int min = sense_cap(pio0, sm);
+    int x = sense_cap(pio0, sm);
+
+    if(x>max) {
+        max = x;
+    }
+    if(x<min) {
+        min = x;
+    }
+
+    return (x-min) / (float) (max-min);
+}

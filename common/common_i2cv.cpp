@@ -59,7 +59,7 @@ void common_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_routi
 
     // Set up state machine to send I2CV data in and out
     uint i2cv_offset = pio_add_program(pio0, &i2cv_bidirectional_program);
-    uint i2cv_sm = pio_claim_unused_sm(pio0, true);;
+    uint i2cv_sm = pio_claim_unused_sm(pio0, true);
     i2cv_bidirectional_program_init(pio0, i2cv_sm, i2cv_offset, I2CV_OUT_PIN, WS_PIN, I2CV_IN_PIN);
     pio_sm_set_enabled(pio0, i2cv_sm, true);
 
