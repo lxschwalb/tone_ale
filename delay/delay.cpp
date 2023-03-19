@@ -9,7 +9,7 @@
 #define BUFFSIZE        16
 #define SAMPLE_RATE     48000
 #define SYSTEM_CLK      270000000
-#define DELAYBUFFSIZE   32768
+#define DELAYBUFFSIZE   32767
 #define FEEDBACK        true
 
 static bool state = true;
@@ -35,10 +35,10 @@ void interrupt_service_routine() {
 
     for(int i=0; i<BUFFSIZE; i++) {
         if(state){
-            buff[i] = add_delay(buff[i]<<8);
+            buff[i] = conv_32bit_to_24_bit(add_delay(correct_sign(buff[i])));
         }
         else {
-            buff[i] = buff[i]<<8;
+            buff[i] = conv_32bit_to_24_bit(correct_sign(buff[i]));
         }
     }
 }

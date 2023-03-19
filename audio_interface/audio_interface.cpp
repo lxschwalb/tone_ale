@@ -1,5 +1,6 @@
 #include "tusb.h"
 #include "tone_ale.h"
+#include "tone_ale_usb.h"
 #include "pico/multicore.h" 
 
 #define BUFFSIZE    16

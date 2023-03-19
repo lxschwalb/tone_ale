@@ -141,17 +141,6 @@ static const int32_t cab[CAB_BUFFSIZE] = {  -1,
                                             -7,
                                             -3};
 
-int32_t correct_sign(int32_t x) {
-    if (x & (1<<23))
-    {
-        return x | 0xFF000000;
-    }
-    else
-    {
-        return x;
-    }    
-}
-
 int32_t fir(int32_t x, bool channel_select) {
     static int32_t inbuff1[CAB_BUFFSIZE];
     static int32_t inbuff2[CAB_BUFFSIZE];

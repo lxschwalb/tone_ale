@@ -12,5 +12,5 @@ int32_t * mutable_data();
 bool capsense_button(int threshold);
 float capsense_return_percentage_of_max();
 void set_led(bool state);
-void usb_audio_buff_broker(int32_t *buff);
-void usb_audio_buff_broker_mute(int32_t *buff);
+int32_t correct_sign(int32_t x);
+int32_t conv_32bit_to_24_bit(int32_t x);

@@ -145,16 +145,6 @@ static const int32_t cab[CAB_BUFFSIZE] = {  -1,
                                             -3};
 
 bool state = false;
-int32_t correct_sign(int32_t x) {
-    if (x & (1<<23))
-    {
-        return x | 0xFF000000;
-    }
-    else
-    {
-        return x;
-    }
-}
 
 int32_t fuzz(int32_t x) {
     float y = x*GAIN;

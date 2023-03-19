@@ -14,6 +14,10 @@
 #define DAC_FMT_PIN     22
 #define DAC_XSMT_PIN    23
 
+
+#define __24bitmax__    8388000/2
+#define __24bitmin__    -8388000/2
+
 void tone_ale_pins_setup() {
     gpio_init(LED_PIN);
     gpio_init(ADC_FMT_PIN);
@@ -43,4 +47,15 @@ void set_led(bool state){
 
 bool get_led(){
     return gpio_get(LED_PIN);
+}
+
+int32_t correct_sign(int32_t x) {
+    if (x & (1<<23)) {return x | 0xFF000000;}
+    else {return x;}    
+}
+
+int32_t conv_32bit_to_24_bit(int32_t x) {
+    if(x>__24bitmax__) {return __24bitmax__<<8;}
+    if(x<__24bitmin__) {return __24bitmin__<<8;}
+    else {return x<<8;}
 }
