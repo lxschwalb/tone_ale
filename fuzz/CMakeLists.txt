@@ -5,10 +5,10 @@ add_executable(fuzz
 
 target_link_libraries(fuzz
                       pico_stdlib
-                      common)
+                      tone_ale)
 
 target_include_directories(fuzz PUBLIC
-                          "${PROJECT_SOURCE_DIR}/common"
+                          "${PROJECT_SOURCE_DIR}/tone_ale"
                           )
 
 pico_add_extra_outputs(fuzz)

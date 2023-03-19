@@ -14,7 +14,7 @@
 #define DAC_FMT_PIN     22
 #define DAC_XSMT_PIN    23
 
-void common_pins_setup() {
+void tone_ale_pins_setup() {
     gpio_init(LED_PIN);
     gpio_init(ADC_FMT_PIN);
     gpio_init(DAC_DEMP_PIN);

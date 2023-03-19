@@ -5,10 +5,10 @@ cab_sim.cpp
 
 target_link_libraries(cab_sim
                       pico_stdlib
-                      common)
+                      tone_ale)
 
 target_include_directories(cab_sim PUBLIC
-                          "${PROJECT_SOURCE_DIR}/common"
+                          "${PROJECT_SOURCE_DIR}/tone_ale"
                           )
 
 pico_add_extra_outputs(cab_sim)

@@ -5,10 +5,10 @@ rig.cpp
 
 target_link_libraries(rig
                       pico_stdlib
-                      common)
+                      tone_ale)
 
 target_include_directories(rig PUBLIC
-                          "${PROJECT_SOURCE_DIR}/common"
+                          "${PROJECT_SOURCE_DIR}/tone_ale"
                           )
 
 pico_add_extra_outputs(rig)

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
-#include "common.h"
+#include "tone_ale.h"
 #include <cstring>
 
 #define BUFFSIZE    256
@@ -59,10 +59,10 @@ void interrupt_service_routine() {
 int main() {
     int32_t data_buff[BUFFSIZE*3];
     set_sys_clock_khz(SYSTEM_CLK/1000, true);
-    common_pins_setup();
-    common_capsense_setup();
-    // common_clk_setup(SAMPLE_RATE, SYSTEM_CLK);
-    common_i2cv_setup(data_buff, BUFFSIZE, interrupt_service_routine);
+    tone_ale_pins_setup();
+    tone_ale_capsense_setup();
+    tone_ale_clk_setup(SAMPLE_RATE, SYSTEM_CLK);
+    tone_ale_i2cv_setup(data_buff, BUFFSIZE, interrupt_service_routine);
 
     while (true) {
         sleep_ms(1);

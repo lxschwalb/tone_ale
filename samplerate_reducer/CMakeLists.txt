@@ -5,10 +5,10 @@ add_executable(samplerate_reducer
 
 target_link_libraries(samplerate_reducer
                       pico_stdlib
-                      common)
+                      tone_ale)
 
 target_include_directories(samplerate_reducer PUBLIC
-                          "${PROJECT_SOURCE_DIR}/common"
+                          "${PROJECT_SOURCE_DIR}/tone_ale"
                           )
 
 pico_add_extra_outputs(samplerate_reducer)

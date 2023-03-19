@@ -13,7 +13,7 @@
 
 int sm;
 
-void common_capsense_setup() {
+void tone_ale_capsense_setup() {
     sm = pio_claim_unused_sm(pio0, true);
     uint capsense_offset = pio_add_program(pio0, &capsense_program);
     capsense_program_init(pio0, sm, capsense_offset, CAP_SEND_PIN, CAP_SENSE_PIN);

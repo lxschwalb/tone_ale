@@ -34,7 +34,7 @@ void juggle_buffers() { // TODO align left and right channels
     dma_channel_set_write_addr(dma_in_chan, i2cv_rx_buff_ptr, true);
 }
 
-void common_clk_setup(float samplerate, float system_clk) {
+void tone_ale_clk_setup(float samplerate, float system_clk) {
     float freq_div = system_clk/(4*24*samplerate);
     uint i2cv_clk_offset = pio_add_program(pio0, &i2cv_clocks_program);
 
@@ -52,7 +52,7 @@ void common_clk_setup(float samplerate, float system_clk) {
     pio_sm_set_enabled(pio0, adc_clk_sm, true);
 }
 
-void common_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_routine()) {
+void tone_ale_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_routine()) {
     i2cv_tx_buff_ptr = buff;
     i2cv_rx_buff_ptr = &buff[buffsize];
     i2cv_x_buff_ptr = &buff[buffsize*2];
