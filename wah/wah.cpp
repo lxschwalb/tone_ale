@@ -43,24 +43,31 @@ void interrupt_service_routine() {
     juggle_buffers();
     int32_t *buff = mutable_data();
 
-    for (int i = 0; i < BUFFSIZE; i += 8) {
-        // Downsample
-        int32_t left = correct_sign(buff[i]) + correct_sign(buff[i+2]) + correct_sign(buff[i+4]) + correct_sign(buff[i+6]);
-        int32_t right = correct_sign(buff[i+1]) + correct_sign(buff[i+3]) + correct_sign(buff[i+5]) + correct_sign(buff[i+7]);
+    if(foot >0){
+        for (int i = 0; i < BUFFSIZE; i += 8) {
+            // Downsample
+            int32_t left = correct_sign(buff[i]) + correct_sign(buff[i+2]) + correct_sign(buff[i+4]) + correct_sign(buff[i+6]);
+            int32_t right = correct_sign(buff[i+1]) + correct_sign(buff[i+3]) + correct_sign(buff[i+5]) + correct_sign(buff[i+7]);
 
-        // Wah
-        left = wah1.apply(left>>2)<<8;
-        right = wah2.apply(right>>2)<<8;
+            // Wah
+            left = wah1.apply(left>>2)<<8;
+            right = wah2.apply(right>>2)<<8;
 
-        // Upsample
-        buff[i] = left;
-        buff[i+1] = right;
-        buff[i+2] = left;
-        buff[i+3] = right;
-        buff[i+4] = left;
-        buff[i+5] = right;
-        buff[i+6] = left;
-        buff[i+7] = right;
+            // Upsample
+            buff[i] = left;
+            buff[i+1] = right;
+            buff[i+2] = left;
+            buff[i+3] = right;
+            buff[i+4] = left;
+            buff[i+5] = right;
+            buff[i+6] = left;
+            buff[i+7] = right;
+        }
+    }
+    else {
+        for(int i=0; i<BUFFSIZE; i++) {
+            buff[i] = buff[i] << 8;
+        }
     }
 }
 
@@ -74,6 +81,6 @@ int main() {
 
     while (true) {
         sleep_ms(1);
-        foot = capsense_return_percentage_of_max() * 256;
+        foot = capsense_return_percentage_of_max() * 260-4;
     }
 }
