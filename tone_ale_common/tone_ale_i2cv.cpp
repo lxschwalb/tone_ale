@@ -22,16 +22,16 @@ static int32_t *i2cv_temp_ptr;
 static int dma_out_chan = dma_claim_unused_channel(true);
 static int dma_in_chan = dma_claim_unused_channel(true);
 
-void juggle_buffers() { // TODO align left and right channels
-    dma_hw->ints0 = 1u << dma_out_chan;
+void juggle_buffers() {
+    dma_hw->ints0 = 1u << dma_in_chan;
 
 	i2cv_temp_ptr = i2cv_tx_buff_ptr;
 	i2cv_tx_buff_ptr = i2cv_x_buff_ptr;
 	i2cv_x_buff_ptr = i2cv_rx_buff_ptr;
 	i2cv_rx_buff_ptr = i2cv_temp_ptr;
     
-    dma_channel_set_read_addr(dma_out_chan, i2cv_tx_buff_ptr, true);
     dma_channel_set_write_addr(dma_in_chan, i2cv_rx_buff_ptr, true);
+    dma_channel_set_read_addr(dma_out_chan, i2cv_tx_buff_ptr, true);
 }
 
 void tone_ale_clk_setup(float samplerate, float system_clk) {
@@ -45,9 +45,9 @@ void tone_ale_clk_setup(float samplerate, float system_clk) {
     i2cv_clocks_set_ws_widths(pio0, i2cv_clk_sm, 24, 24);
     pio_sm_set_enabled(pio0, i2cv_clk_sm, true);
 
-    // PCM1808 requires external clock, reuse i2cv_clocks state machine to generate it
+    // PCM1808 requires external clock, reuse i2cv_clocks state machine to generate it TODO use ADC internal clock
     uint adc_clk_sm = pio_claim_unused_sm(pio0, true);
-    i2cv_clocks_program_init(pio0, adc_clk_sm, i2cv_clk_offset, ADC_CLK_PIN, 10); //TODO remove magic number
+    i2cv_clocks_program_init(pio0, adc_clk_sm, i2cv_clk_offset, ADC_CLK_PIN, 10); // Pin 10 is an unused dummy pin 
     pio_sm_set_clkdiv(pio0, adc_clk_sm, freq_div/8);
     pio_sm_set_enabled(pio0, adc_clk_sm, true);
 }
@@ -95,14 +95,17 @@ void tone_ale_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_rou
     );
 
     // // Tell the DMA to raise IRQ line 0 when the channel finishes a block
-    dma_channel_set_irq0_enabled(dma_out_chan, true);
+    dma_channel_set_irq0_enabled(dma_in_chan, true);
 
     // // Configure the processor to run interrupt_service_routine() when DMA IRQ 0 is asserted
     irq_set_exclusive_handler(DMA_IRQ_0, interrupt_service_routine);
     irq_set_enabled(DMA_IRQ_0, true);
 
-    // Manually call the handler once, to trigger the first transfer
-    interrupt_service_routine();
+    // Wait for rising edge, then manually call the handler once, to trigger the first transfer
+    while(gpio_get(WS_PIN));
+    while(gpio_get(WS_PIN) == false);
+    dma_channel_set_write_addr(dma_in_chan, i2cv_rx_buff_ptr, true); // TODO use multi chan trigger
+    dma_channel_set_read_addr(dma_out_chan, i2cv_tx_buff_ptr, true);
 }
 
 int32_t * mutable_data() {

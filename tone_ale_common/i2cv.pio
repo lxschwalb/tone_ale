@@ -19,10 +19,10 @@
 .wrap_target
 
     start:
-        pull
         wait 1 gpio 14
         in pins, 1
-        push noblock
+        push iffull noblock
+        pull
         wait 0 gpio 14
         out pins, 1
         jmp pin, ws1_loop
@@ -82,8 +82,8 @@ void i2cv_bidirectional_program_init(PIO pio, uint sm, uint offset, uint out_pin
 
     pio_sm_set_consecutive_pindirs(pio, sm, out_pin, 1, true);
 
-    sm_config_set_out_shift(&c, false, false, 32);
-    sm_config_set_in_shift(&c, false, false, 32);
+    sm_config_set_out_shift(&c, false, false, 2);
+    sm_config_set_in_shift(&c, false, false, 2);
 
     pio_sm_init(pio, sm, offset, &c);
 }
