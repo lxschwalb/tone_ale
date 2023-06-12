@@ -34,7 +34,7 @@ void juggle_buffers() {
     dma_channel_set_read_addr(dma_out_chan, i2cv_tx_buff_ptr, true);
 }
 
-void tone_ale_clk_setup(float samplerate, float system_clk) {
+void tone_ale_clk_setup(float samplerate, float system_clk) { //  TODO use ADC to generate clock
     float freq_div = system_clk/(4*24*samplerate);
     uint i2cv_clk_offset = pio_add_program(pio0, &i2cv_clocks_program);
 
@@ -45,7 +45,7 @@ void tone_ale_clk_setup(float samplerate, float system_clk) {
     i2cv_clocks_set_ws_widths(pio0, i2cv_clk_sm, 24, 24);
     pio_sm_set_enabled(pio0, i2cv_clk_sm, true);
 
-    // PCM1808 requires external clock, reuse i2cv_clocks state machine to generate it TODO use ADC internal clock
+    // PCM1808 requires external clock, reuse i2cv_clocks state machine to generate it
     uint adc_clk_sm = pio_claim_unused_sm(pio0, true);
     i2cv_clocks_program_init(pio0, adc_clk_sm, i2cv_clk_offset, ADC_CLK_PIN, 10); // Pin 10 is an unused dummy pin 
     pio_sm_set_clkdiv(pio0, adc_clk_sm, freq_div/8);
@@ -101,9 +101,9 @@ void tone_ale_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_rou
     irq_set_exclusive_handler(DMA_IRQ_0, interrupt_service_routine);
     irq_set_enabled(DMA_IRQ_0, true);
 
-    // Wait for rising edge, then manually call the handler once, to trigger the first transfer
-    while(gpio_get(WS_PIN));
+    // Wait for falling edge, then trigger DMAs
     while(gpio_get(WS_PIN) == false);
+    while(gpio_get(WS_PIN));
     dma_channel_set_write_addr(dma_in_chan, i2cv_rx_buff_ptr, true); // TODO use multi chan trigger
     dma_channel_set_read_addr(dma_out_chan, i2cv_tx_buff_ptr, true);
 }

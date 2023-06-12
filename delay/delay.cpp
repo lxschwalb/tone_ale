@@ -9,7 +9,7 @@
 #define BUFFSIZE        16
 #define SAMPLE_RATE     48000
 #define SYSTEM_CLK      270000000
-#define DELAYBUFFSIZE   32767
+#define DELAYBUFFSIZE   32768
 #define FEEDBACK        true
 
 static bool state = true;
@@ -26,7 +26,7 @@ int32_t add_delay(int32_t x) {
 
     index = (index+1)%DELAYBUFFSIZE;
 
-    return x + delaybuff[index];
+    return x + delaybuff[(index+1)%DELAYBUFFSIZE];
 }
 
 void interrupt_service_routine() {
