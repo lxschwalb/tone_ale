@@ -19,13 +19,13 @@ class Wah {
         int32_t x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
         int32_t apply(int32_t x) {
-            int32_t y = ((BPF_b0[foot] * x)>>8 )+
+            int64_t y = ((BPF_b0[foot] * x)>>8)  +
                         ((BPF_b1[foot] * x1)>>8) +
                         ((BPF_b2[foot] * x2)>>8) -
                         ((BPF_a1[foot] * y1)>>8) -
                         ((BPF_a2[foot] * y2)>>8);
 
-            y = conv_32bit_to_24_bit(y)>>8;
+            y = clip_shift(y)>>8;
             
             x2 = x1;
             x1 = x;
@@ -46,12 +46,12 @@ void interrupt_service_routine() {
     if(foot >0){
         for (int i = 0; i < BUFFSIZE; i += 8) {
             // Downsample
-            int32_t left = correct_sign(buff[i]) + correct_sign(buff[i+2]) + correct_sign(buff[i+4]) + correct_sign(buff[i+6]);
-            int32_t right = correct_sign(buff[i+1]) + correct_sign(buff[i+3]) + correct_sign(buff[i+5]) + correct_sign(buff[i+7]);
+            int32_t left = buff[i] + buff[i+2] + buff[i+4] + buff[i+6];
+            int32_t right = buff[i+1] + buff[i+3] + buff[i+5] + buff[i+7];
 
             // Wah
-            left = wah1.apply(left>>2)<<8;
-            right = wah2.apply(right>>2)<<8;
+            left = wah1.apply(left>>10)<<10;
+            right = wah2.apply(right>>10)<<10;
 
             // Upsample
             buff[i] = left;
@@ -62,11 +62,6 @@ void interrupt_service_routine() {
             buff[i+5] = right;
             buff[i+6] = left;
             buff[i+7] = right;
-        }
-    }
-    else {
-        for(int i=0; i<BUFFSIZE; i++) {
-            buff[i] = buff[i] << 8;
         }
     }
 }

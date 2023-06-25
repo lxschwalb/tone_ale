@@ -52,13 +52,8 @@ void interrupt_service_routine() {
 
     if(state) {
         for (int i = 0; i < BUFFSIZE; i += 2) {
-            buff[i] = unstable1.apply(correct_sign(buff[i]))<<8;
-            buff[i+1] = unstable2.apply(correct_sign(buff[i+1]))<<8;
-        }
-    }
-    else {
-        for(int i=0; i<BUFFSIZE; i++) {
-            buff[i] = buff[i] << 8;
+            buff[i] = unstable1.apply(buff[i])>>2;
+            buff[i+1] = unstable2.apply(buff[i+1])>>2;
         }
     }
 }

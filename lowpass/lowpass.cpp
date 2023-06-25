@@ -19,13 +19,13 @@ class LPF {
         int32_t x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
         int32_t apply(int32_t x) {
-            int32_t y = ((LPF_b0[256 - foot] * x)>>8 )+
+            int32_t y = ((LPF_b0[256 - foot] * x)>>8)  +
                         ((LPF_b1[256 - foot] * x1)>>8) +
                         ((LPF_b2[256 - foot] * x2)>>8) -
                         ((LPF_a1[256 - foot] * y1)>>8) -
                         ((LPF_a2[256 - foot] * y2)>>8);
 
-            y = conv_32bit_to_24_bit(y)>>8;
+            // y = clip_shift(y)>>8;
             
             x2 = x1;
             x1 = x;
@@ -44,8 +44,8 @@ void interrupt_service_routine() {
     int32_t *buff = mutable_data();
 
     for (int i = 0; i < BUFFSIZE; i += 2) {
-        buff[i] = lpf1.apply(correct_sign(buff[i]))<<8;
-        buff[i+1] = lpf2.apply(correct_sign(buff[i+1]))<<8;
+        buff[i] = clip_shift(lpf1.apply((buff[i]>>8)));
+        buff[i+1] = clip_shift(lpf2.apply((buff[i+1]>>8)));
     }
 }
 

@@ -39,8 +39,8 @@ void interrupt_service_routine() {
     int32_t right[BUFFSIZE / 2];
 
     for (int i = 0; i < BUFFSIZE; i += 2) {
-        left[i / 2] = buff[i]<<8;
-        right[i / 2] = buff[i + 1]<<8;
+        left[i / 2] = buff[i];
+        right[i / 2] = buff[i + 1];
     }
 
     downsampleAndUpsample(left, ds_factor, BUFFSIZE / 2);

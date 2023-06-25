@@ -52,14 +52,14 @@ void interrupt_service_routine() {
 
     if(state) {
         for(int i=0; i<BUFFSIZE; i+=2) {
-            buff[i] = fir1.apply(fuzz(correct_sign(buff[i])));
-            buff[i+1] = fir2.apply(fuzz(correct_sign(buff[i+1])));
+            buff[i] = fir1.apply(fuzz(buff[i]>>8));
+            buff[i+1] = fir2.apply(fuzz(buff[i+1]>>8));
         }
     }
     else {
         for(int i=0; i<BUFFSIZE; i+=2) {
-            buff[i] = fir1.apply(correct_sign(buff[i]));
-            buff[i+1] = fir2.apply(correct_sign(buff[i+1]));
+            buff[i] = fir1.apply(buff[i]>>8);
+            buff[i+1] = fir2.apply(buff[i+1]>>8);
         }
     }
 }

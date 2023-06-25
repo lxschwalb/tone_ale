@@ -14,33 +14,48 @@
         jmp y--, ws0_loop   side 0x0
 .wrap
 
+.program simple_clock
+
+.wrap_target
+        set pins, 1
+        set pins, 0
+.wrap
+
 .program i2cv_bidirectional
 
 .wrap_target
 
-    start:
-        wait 1 gpio 14
-        in pins, 1
-        push iffull noblock
+    pull block
+
+    waitforhigh:
+    jmp pin, waitforlow
+    jmp waitforhigh
+
+    waitforlow:
+    jmp pin, waitforlow
+
+    jmp ws0_loop
+
+    pushpull:
+        push noblock
         pull
-        wait 0 gpio 14
-        out pins, 1
         jmp pin, ws1_loop
 
     ws0_loop:
-        wait 1 gpio 14
-        in pins, 1
         wait 0 gpio 14
         out pins, 1
-        jmp pin, start
+        wait 1 gpio 14
+        in pins, 1
+        jmp pin, pushpull
         jmp ws0_loop
 
     ws1_loop:
-        wait 1 gpio 14
-        in pins, 1
         wait 0 gpio 14
         out pins, 1
+        wait 1 gpio 14
+        in pins, 1
         jmp pin, ws1_loop
+        jmp pushpull
 .wrap
 
 
@@ -70,6 +85,19 @@ void i2cv_clocks_set_ws_widths(PIO pio, uint sm, uint high_width, uint low_width
     }
 }
 
+void simple_clock_program_init(PIO pio, uint sm, uint offset, uint clk) {
+
+    pio_sm_config c = simple_clock_program_get_default_config(offset);
+
+    sm_config_set_set_pins(&c, clk, 1);
+
+    pio_gpio_init(pio, clk);
+
+    pio_sm_set_consecutive_pindirs(pio, sm, clk, 1, true);
+
+    pio_sm_init(pio, sm, offset, &c);
+}
+
 void i2cv_bidirectional_program_init(PIO pio, uint sm, uint offset, uint out_pin, uint ws, uint in_pin) {
     pio_sm_config c = i2cv_bidirectional_program_get_default_config(offset);
 
@@ -82,8 +110,8 @@ void i2cv_bidirectional_program_init(PIO pio, uint sm, uint offset, uint out_pin
 
     pio_sm_set_consecutive_pindirs(pio, sm, out_pin, 1, true);
 
-    sm_config_set_out_shift(&c, false, false, 2);
-    sm_config_set_in_shift(&c, false, false, 2);
+    sm_config_set_out_shift(&c, false, false, 32);
+    sm_config_set_in_shift(&c, false, false, 32);
 
     pio_sm_init(pio, sm, offset, &c);
 }

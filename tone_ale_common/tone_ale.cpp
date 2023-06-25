@@ -9,6 +9,8 @@
 
 #define LED_PIN         25
 #define ADC_FMT_PIN     12
+#define ADC_MD0_PIN     7
+#define ADC_MD1_PIN     8
 #define DAC_DEMP_PIN    19
 #define DAC_FLT_PIN     20
 #define DAC_FMT_PIN     22
@@ -21,6 +23,8 @@
 void tone_ale_pins_setup() {
     gpio_init(LED_PIN);
     gpio_init(ADC_FMT_PIN);
+    gpio_init(ADC_MD0_PIN);
+    gpio_init(ADC_MD1_PIN);
     gpio_init(DAC_DEMP_PIN);
     gpio_init(DAC_FLT_PIN);
     gpio_init(DAC_FMT_PIN);
@@ -28,6 +32,8 @@ void tone_ale_pins_setup() {
 
     gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_set_dir(ADC_FMT_PIN, GPIO_OUT);
+    gpio_set_dir(ADC_MD0_PIN, GPIO_OUT);
+    gpio_set_dir(ADC_MD1_PIN, GPIO_OUT);
     gpio_set_dir(DAC_DEMP_PIN, GPIO_OUT);
     gpio_set_dir(DAC_FLT_PIN, GPIO_OUT);
     gpio_set_dir(DAC_FMT_PIN, GPIO_OUT);
@@ -35,6 +41,8 @@ void tone_ale_pins_setup() {
 
     gpio_put(LED_PIN, 1);
     gpio_put(ADC_FMT_PIN, 0);
+    gpio_put(ADC_MD0_PIN, 1);
+    gpio_put(ADC_MD1_PIN, 1);
     gpio_put(DAC_DEMP_PIN, 0);
     gpio_put(DAC_FLT_PIN, 1);
     gpio_put(DAC_FMT_PIN, 0);
@@ -49,12 +57,7 @@ bool get_led(){
     return gpio_get(LED_PIN);
 }
 
-int32_t correct_sign(int32_t x) {
-    if (x & (1<<23)) {return x | 0xFF000000;}
-    else {return x;}    
-}
-
-int32_t conv_32bit_to_24_bit(int32_t x) {
+int32_t clip_shift(int32_t x) {
     if(x>__24bitmax__) {return __24bitmax__<<8;}
     if(x<__24bitmin__) {return __24bitmin__<<8;}
     else {return x<<8;}

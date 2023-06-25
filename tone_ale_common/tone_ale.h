@@ -13,8 +13,7 @@ bool capsense_button(int threshold);
 bool capsense_momentary_button(int threshold);
 float capsense_return_percentage_of_max();
 void set_led(bool state);
-int32_t correct_sign(int32_t x);
-int32_t conv_32bit_to_24_bit(int32_t x);
+int32_t clip_shift(int32_t x);
 
 
 #define SIN_BUFFSIZE    256

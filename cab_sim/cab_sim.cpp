@@ -38,8 +38,8 @@ void interrupt_service_routine() {
     int32_t * buff = mutable_data();
 
     for(int i=0; i<BUFFSIZE; i+=2) {
-        buff[i] = fir1.apply(correct_sign(buff[i]));
-        buff[i+1] = fir2.apply(correct_sign(buff[i+1]));
+        buff[i] = clip_shift(fir1.apply((buff[i]>>16)));
+        buff[i+1] = clip_shift(fir2.apply((buff[i+1]>>16)));
     }
 }
 

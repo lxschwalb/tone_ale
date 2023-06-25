@@ -32,7 +32,6 @@ void interrupt_service_routine() {
 
     for (int i = 0; i < BUFFSIZE; i++)
     {
-        buff[i] <<= 8;
         multicore_fifo_push_blocking((uint32_t)&buff[i]);        
     }
 }

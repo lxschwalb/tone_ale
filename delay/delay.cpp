@@ -35,10 +35,7 @@ void interrupt_service_routine() {
 
     for(int i=0; i<BUFFSIZE; i++) {
         if(state){
-            buff[i] = conv_32bit_to_24_bit(add_delay(correct_sign(buff[i])));
-        }
-        else {
-            buff[i] = conv_32bit_to_24_bit(correct_sign(buff[i]));
+            buff[i] = clip_shift(add_delay(buff[i]>>8));
         }
     }
 }

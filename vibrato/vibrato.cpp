@@ -52,13 +52,8 @@ void interrupt_service_routine() {
     if(state){
         for (int i = 0; i < BUFFSIZE; i += 2) {
             update_warp();
-            buff[i] = conv_32bit_to_24_bit(vib(correct_sign(buff[i]), leftbuff, &leftindex));
-            buff[i+1] = conv_32bit_to_24_bit(vib(correct_sign(buff[i+1]), rightbuff, &rightindex));
-        }
-    }
-    else {
-        for(int i=0; i<BUFFSIZE; i++) {
-            buff[i] = buff[i] << 8;
+            buff[i] = vib(buff[i], leftbuff, &leftindex);
+            buff[i+1] = vib(buff[i+1], rightbuff, &rightindex);
         }
     }
 }

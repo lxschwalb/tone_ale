@@ -12,6 +12,7 @@
 #define CLIP_POS    4194304<<8
 #define CLIP_NEG    -4194304<<8
 #define SYSTEM_CLK  270000000
+#define GATED       true
 
 static bool state = false;
 
@@ -20,7 +21,10 @@ int32_t fuzz(int32_t x) {
     
     if(y>CLIP_POS){y = CLIP_POS;}
     else if(y<CLIP_NEG){y = CLIP_NEG;}
+
+#if GATED
     else {y = 0.0;}
+#endif
 
     return static_cast<int32_t>(y);
 }
@@ -32,10 +36,7 @@ void interrupt_service_routine() {
 
     for(int i=0; i<BUFFSIZE; i++) {
         if(state){
-            buff[i] = fuzz(buff[i]<<8);
-        }
-        else {
-            buff[i] = buff[i] << 8;
+            buff[i] = fuzz(buff[i]);
         }
     }
 }

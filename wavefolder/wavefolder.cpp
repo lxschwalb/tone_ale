@@ -36,11 +36,8 @@ void interrupt_service_routine() {
 
     for(int i=0; i<BUFFSIZE; i++) {
         if(state){
-            y = fold((buff[i]<<8)*GAIN);
+            y = fold(buff[i]*GAIN);
             buff[i] = static_cast<int32_t>(y);
-        }
-        else {
-            buff[i] = buff[i]<<8;
         }
     }
 }

@@ -41130,11 +41130,10 @@ void interrupt_service_routine() {
             if(i%4/3){ // Only increment on 1/4 of the samples, because it's 1/2 the channels and 1/2 the sample rate
                 idx = (idx+1)%AMENBUFFSIZE;
             }
-            buff[i] = conv_32bit_to_24_bit(correct_sign(buff[i]) + (int)(amen_buf[idx]*gain));
+            buff[i] = clip_shift((buff[i]>>8) + (int)(amen_buf[idx]*gain));
         }
         else {
             idx = 0;
-            buff[i] = conv_32bit_to_24_bit(correct_sign(buff[i]));
         }
     }
 }
