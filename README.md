@@ -1,6 +1,8 @@
 # Tone Ale
 Reprogrammable rp2040 based guitar pedal with capacitive touch sensing. Some effects are toggled on and off by tapping on the pedal surface, others act as expression pedals by increasing and decreasing the pressure/surface area you apply to the pedal.
 
+<img src="hw/Photo.jpg" width="800">
+
 Currently it can be programmed as:
 * audio interface
 * cabinet simulator
