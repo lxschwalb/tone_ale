@@ -3,14 +3,20 @@ Reprogrammable rp2040 based guitar pedal with capacitive touch sensing. Some eff
 
 <img src="hw/Photo.jpg" width="800">
 
-Currently it can be programmed as:
+## Effects:
 * audio interface
+  * 2 input 2 output usb audio interface. Tap on pedal surface to mute/unmute it. LED indicates mute status. Only 48kHz 32bit audio supported.
 * cabinet simulator
+  * Guitar cabinet simulator using an impulse response.
 * delay
+  * Stereo digital delay. Each repeat is half the volume of the previous. Set feedback to false for only one repeat. Change delay buffer size for a different delay time. set it to an odd number for ping pong delay.
 * fuzz
+  * Simple fuzz. Turn on the gate for a tight velcro sound. Change the gain to taste.
 * low pass filter
+  * Always on low pass filter. Cuttoff frequency is determined by pressure applied to pedal. When not touching the pedal the cuttoff frequency should be higher than audible range so it is as if there is no filter
 * phaser
 * rig (amp + cab sim)
+* sample player (amen beat)
 * sample rate reducer
 * unstable noise generator
 * vibrato
