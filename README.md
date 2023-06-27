@@ -11,17 +11,25 @@ Reprogrammable rp2040 based guitar pedal with capacitive touch sensing. Some eff
 * delay
   * Stereo digital delay. Each repeat is half the volume of the previous. Set feedback to false for only one repeat. Change delay buffer size for a different delay time. set it to an odd number for ping pong delay.
 * fuzz
-  * Simple fuzz. Turn on the gate for a tight velcro sound. Change the gain to taste.
+  * Simple fuzz. Turn on the gate for a tight velcro sound. Change the gain and clipping levels to taste.
 * low pass filter
-  * Always on low pass filter. Cuttoff frequency is determined by pressure applied to pedal. When not touching the pedal the cuttoff frequency should be higher than audible range so it is as if there is no filter
+  * Always on low pass filter. Cuttoff frequency is determined by pressure applied to pedal. When not touching the pedal the cuttoff frequency should be higher than audible range so it is as if there is no filter.
 * phaser
-* rig (amp + cab sim)
+  * phaser effect with various parameters that can be tuned in code.
+* rig
+  * fuzz and cabinet simulator together in one effect which kind of gives the sound of a full guitar rig.
 * sample player (amen beat)
+  * sample starts playing when you place your foot on the pedal and stops when you take it away. It restarts from the beginning everytime. Increasing and decreasing the pressure/surface area changes the volume.
 * sample rate reducer
+  * By default the sample rate is 48kH and there is no aliasing. By stepping on the pedal you decrease the sample rate and introduce aliasing artifacts. The harder you press the more the sample rate drops.
 * unstable noise generator
+  * Unstable IIR filter. It chaotically generates weird sounds which are effected by the input in unpredictable ways.
 * vibrato
+  * pitch shifting vibrato
 * wah
+  * classic band pass filter wah sound. It engages when you step on the pedal and then you control the wah using pressure. As soon as you remove your foot it outputs the dry signal again.
 * wavefolder
+  * Similar to fuzz, except instead of clipping it folds the part of the signal above the threshold back down.
 
 <img src="hw/tone_ale_top.png" width="400"> <img src="hw/tone_ale_bottom.png" width="400">
 
