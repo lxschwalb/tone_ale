@@ -12,7 +12,7 @@
 #define SYSTEM_CLK      270000000
 #define ATTENUATION     4
 
-
+bool state = true;
 class FIR {
     public:
         int32_t inbuff[CAB_BUFFSIZE];
@@ -37,9 +37,11 @@ void interrupt_service_routine() {
     juggle_buffers();
     int32_t * buff = mutable_data();
 
-    for(int i=0; i<BUFFSIZE; i+=2) {
-        buff[i] = clip_shift(fir1.apply((buff[i]>>16)));
-        buff[i+1] = clip_shift(fir2.apply((buff[i+1]>>16)));
+    if(state) {
+        for(int i=0; i<BUFFSIZE; i+=2) {
+            buff[i] = clip_shift(fir1.apply((buff[i]>>16)));
+            buff[i+1] = clip_shift(fir2.apply((buff[i+1]>>16)));
+        }
     }
 }
 
@@ -53,6 +55,8 @@ int main() {
     set_led(true);
 
     while (true) {
-        // state = capsense_button(20);
+        sleep_ms(1);
+        state = capsense_button(20);
+        set_led(state);
     }
 }
