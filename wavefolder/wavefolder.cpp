@@ -49,10 +49,12 @@ int main() {
     tone_ale_capsense_setup();
     tone_ale_clk_setup(SAMPLE_RATE, SYSTEM_CLK);
     tone_ale_i2cv_setup(data_buff, BUFFSIZE, interrupt_service_routine);
+    Capsense capsense;
+    capsense.reset();
 
     while (true) {
-        sleep_ms(1);
-        state = capsense_button(20);
+        sleep_ms(10);
+        state = capsense.capsense_button(0.5);
         set_led(state);
     }
 }

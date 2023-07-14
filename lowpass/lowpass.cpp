@@ -19,11 +19,11 @@ class LPF {
         int32_t x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
         int32_t apply(int32_t x) {
-            int32_t y = ((LPF_b0[256 - foot] * x)>>8)  +
-                        ((LPF_b1[256 - foot] * x1)>>8) +
-                        ((LPF_b2[256 - foot] * x2)>>8) -
-                        ((LPF_a1[256 - foot] * y1)>>8) -
-                        ((LPF_a2[256 - foot] * y2)>>8);
+            int64_t y = ((LPF_b0[255 - foot] * x)>>8)  +
+                        ((LPF_b1[255 - foot] * x1)>>8) +
+                        ((LPF_b2[255 - foot] * x2)>>8) -
+                        ((LPF_a1[255 - foot] * y1)>>8) -
+                        ((LPF_a2[255 - foot] * y2)>>8);
 
             // y = clip_shift(y)>>8;
             
@@ -56,9 +56,11 @@ int main() {
     tone_ale_capsense_setup();
     tone_ale_clk_setup(SAMPLE_RATE, SYSTEM_CLK);
     tone_ale_i2cv_setup(data_buff, BUFFSIZE, interrupt_service_routine);
+    Capsense capsense;
+    capsense.reset();
 
     while (true) {
         sleep_ms(1);
-        foot = capsense_return_percentage_of_max() * 256;
+        foot = capsense.capsense_return_percentage_of_max() * 255;
     }
 }

@@ -45,6 +45,8 @@ int main()
     tone_ale_clk_setup(SAMPLE_RATE, SYSTEM_CLK);
     tone_ale_i2cv_setup(data_buff, BUFFSIZE, interrupt_service_routine);
     multicore_launch_core1(core1_entry);
+    Capsense capsense;
+    capsense.reset();
 
     // Run muted for a little while while USB is being initialised
     for (int i = 0; i < 2048; i++)
@@ -56,8 +58,8 @@ int main()
     // Loop forever
     while (true)
     {
-        sleep_ms(1);
-        state = capsense_button(20);
+        sleep_ms(10);
+        state = capsense.capsense_button(0.5);
         set_led(state);
     }
 }

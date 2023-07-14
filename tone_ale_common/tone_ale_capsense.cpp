@@ -6,6 +6,7 @@
 
 #include "hardware/pio.h"
 #include "capsense.pio.h"
+#include "tone_ale.h"
 
 // #define CAP_DRIVE_PIN       16 //TODO Test if drive pin makes a difference
 #define CAP_SEND_PIN        17
@@ -20,11 +21,16 @@ void tone_ale_capsense_setup() {
     pio_sm_set_enabled(pio0, sm, true);
 }
 
-bool capsense_button(int threshold) {
-    int x = sense_cap(pio0, sm);
+void Capsense::reset(){
+    for(int i=0; i<32; i++) {
+        capsense_button(1);
+    }
+    max = 0;
+    min = __INT_MAX__;
+}
 
-    static bool pressing = false;
-    static bool state = false;
+bool Capsense::capsense_button(float threshold) {
+    float x = capsense_return_percentage_of_max();
 
     if(x > threshold && !pressing) {
         state = !state;
@@ -34,14 +40,12 @@ bool capsense_button(int threshold) {
     return state;
 }
 
-bool capsense_momentary_button(int threshold) {
+bool Capsense::capsense_momentary_button(int threshold) {
     int x = sense_cap(pio0, sm);
     return x > threshold;
 }
 
-float capsense_return_percentage_of_max() {
-    static int max = 0;
-    static int min = sense_cap(pio0, sm);
+float Capsense::capsense_return_percentage_of_max() {
     int x = sense_cap(pio0, sm);
 
     if(x>max) {

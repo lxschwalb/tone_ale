@@ -41145,10 +41145,12 @@ int main() {
     tone_ale_capsense_setup();
     tone_ale_clk_setup(SAMPLE_RATE, SYSTEM_CLK);
     tone_ale_i2cv_setup(data_buff, BUFFSIZE, interrupt_service_routine);
+    Capsense capsense;
+    capsense.reset();
 
     while (true) {
         sleep_ms(1);
-        gain = capsense_return_percentage_of_max();
+        gain = capsense.capsense_return_percentage_of_max();
         state = (gain > 0.05);
         set_led(state);
     }
