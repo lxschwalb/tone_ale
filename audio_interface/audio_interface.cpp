@@ -11,29 +11,29 @@ bool state = false;
 
 void core1_entry() {
     tusb_init();
+    int32_t *sample_addr;
     while (true)
     {
-        while(multicore_fifo_rvalid()) {
-            int32_t *sample_addr = (int32_t*)multicore_fifo_pop_blocking();
-
-            if(state)
-                usb_audio_buff_broker(sample_addr);
-            else
-                usb_audio_buff_broker_mute(sample_addr);
-        }
         tud_task();
+        while(multicore_fifo_rvalid()) {
+            sample_addr = (int32_t*)multicore_fifo_pop_blocking();
+
+            if(state){
+                for (int i = 0; i < BUFFSIZE; i++){
+                    usb_audio_buff_broker(&sample_addr[i]);
+                }
+            }
+            else
+                for (int i = 0; i < BUFFSIZE; i++)
+                    usb_audio_buff_broker_mute(&sample_addr[i]);
+        }
     }
 }
 
 void interrupt_service_routine() {
     juggle_buffers();
 
-    int32_t *buff = mutable_data();
-
-    for (int i = 0; i < BUFFSIZE; i++)
-    {
-        multicore_fifo_push_blocking((uint32_t)&buff[i]);        
-    }
+    multicore_fifo_push_blocking((uint32_t)mutable_data());
 }
 
 int main()

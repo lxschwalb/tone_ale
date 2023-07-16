@@ -146,9 +146,10 @@ uint8_t usb_mic_buff[MIC_BUF_SIZE];
 int32_t mic_buff_index = 0;
 
 // Buffer for speaker data
-uint8_t usb_spk_buff[SPK_BUF_SIZE];
-int32_t spk_buff_index = 0;
-int bytes_read;
+#define FIFOSIZE        16384
+uint8_t usb_spk_fifo[FIFOSIZE];
+int32_t fifo_read_index = 0;
+int32_t fifo_write_index = 0;
 
 void usb_audio_buff_broker(int32_t *buffi) {
     if (mic_buff_index < MIC_BUF_SIZE)
@@ -158,13 +159,15 @@ void usb_audio_buff_broker(int32_t *buffi) {
         usb_mic_buff[mic_buff_index++] = *buffi >> 16;
         usb_mic_buff[mic_buff_index++] = *buffi >> 24;
     }
-    if (spk_buff_index < bytes_read)
-    {
-        *buffi = (int32_t) usb_spk_buff[spk_buff_index++];
-        *buffi |= (int32_t)usb_spk_buff[spk_buff_index++] << 8;
-        *buffi |= (int32_t)usb_spk_buff[spk_buff_index++] << 16;
-        *buffi |= (int32_t)usb_spk_buff[spk_buff_index++] << 24;
-    }
+
+    if(fifo_read_index > fifo_write_index-4 & fifo_write_index > FIFOSIZE/2)
+        fifo_read_index = 0;
+
+    *buffi = (int32_t)usb_spk_fifo[fifo_read_index++];
+    *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 8;
+    *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 16;
+    *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 24;
+    fifo_read_index %= FIFOSIZE;
 }
 
 void usb_audio_buff_broker_mute(int32_t *buffi) {
@@ -175,11 +178,9 @@ void usb_audio_buff_broker_mute(int32_t *buffi) {
         usb_mic_buff[mic_buff_index++] = 0;
         usb_mic_buff[mic_buff_index++] = 0;
     }
-    if (spk_buff_index < bytes_read)
-    {
-        *buffi = 0;
-        spk_buff_index += 4;
-    }
+    *buffi = 0;
+    fifo_read_index+=4;
+    fifo_read_index%=FIFOSIZE;
 }
 
 
@@ -281,8 +282,12 @@ bool tud_audio_rx_done_pre_read_cb(uint8_t rhport, uint16_t n_bytes_received, ui
     (void)ep_out;
     (void)cur_alt_setting;
 
-    bytes_read = tud_audio_read(usb_spk_buff, n_bytes_received);     //read from USB, write to buffer
-    spk_buff_index = 0;
+    static uint8_t usb_spk_buff[SPK_BUF_SIZE];
+    int bytes_read = tud_audio_read(usb_spk_buff, n_bytes_received);     //read from USB, write to buffer
+    for(int i=0; i<bytes_read; i++) {
+        usb_spk_fifo[fifo_write_index++] = usb_spk_buff[i];
+        fifo_write_index%=FIFOSIZE;
+    }
 
     return true;
 }
