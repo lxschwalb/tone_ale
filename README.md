@@ -43,7 +43,7 @@ For questions about my charity selection process, motivation for doing this, or 
 ## Upload new effect
 You don't need to be able to develop or install special software to upload new effects. All you need is a usb port, cable, and something conductive (a piece of tin foil will to).
 
-To upload new effects, connect the pedal to a computer with a usb cable, touch the part of the pcb shown in the image below with a piece of tin foil and drag it to the side as shown. Now the pedal shows up as a mass storage device. Just drag and drop the uf2 file of the corresponding effect and you're all set to go.
+To upload new effects, connect the pedal to a computer with a usb cable, touch the part of the pcb shown in the image below with a piece of tin foil and drag it to the side as shown. Now the pedal shows up as a mass storage device. Just drag and drop the uf2 file(found in /compiled_effects) of the corresponding effect and you're all set to go.
 
 <img src="hw/firmware_update.png" width="700">
 
