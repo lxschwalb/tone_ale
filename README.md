@@ -36,7 +36,7 @@ Reprogrammable rp2040 based guitar pedal with capacitive touch sensing. Some eff
 ## Where to get one?
 Everything necesary to build your own Tone Ale is available on this repository, but if you want to buy a fully assembled Pedal send an email to toneagetechnology@gmail.com. Profits are donated to effective charities.
 
-Pedals will be sold for CHF125. In spirit of full transparency, I will share that my production cost per pedal is between CHF20 and CHF30 depending on a few varying factors. I will assume it's a fixed CHF25 and donate CHF100 for every pedal sold. This production cost does not include my time/labour, because that is done pro bono.
+Pedals will be sold for CHF125. In spirit of full transparency, I will share that my production cost per pedal is between CHF20 and CHF30 depending on a few varying factors. It would likely cost you more. It's cheaper for me since I'm producing it in bulk and already have a lot of the tools required. I will assume it's a fixed CHF25 and donate CHF100 for every pedal sold. This production cost does not include my time/labour, because that is done pro bono.
 
 For questions about my charity selection process, motivation for doing this, or if you have a prefered charity you want payment for your pedal donated to, you can also email toneagetechnology@gmail.com.
 
