@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 #include "filter_coefs.h"
 
@@ -15,7 +16,7 @@
 #define CLIP_POS        4194304
 #define CLIP_NEG        -4194304
 
-bool state = false;
+volatile bool state = false;
 
 int32_t fuzz(int32_t x) {
     float y = x*GAIN;

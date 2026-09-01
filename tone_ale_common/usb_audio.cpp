@@ -147,9 +147,18 @@ int32_t mic_buff_index = 0;
 
 // Buffer for speaker data
 #define FIFOSIZE        16384
+// Bytes that must be buffered before playback (re)starts - about 2ms at 48kHz/32bit/stereo
+#define SPK_PRIME_BYTES (2 * CFG_TUD_AUDIO_FUNC_1_FORMAT_1_EP_SZ_OUT)
 uint8_t usb_spk_fifo[FIFOSIZE];
 int32_t fifo_read_index = 0;
 int32_t fifo_write_index = 0;
+static bool spk_primed = false;
+
+static inline int32_t spk_fifo_available() {
+    int32_t avail = fifo_write_index - fifo_read_index;
+    if (avail < 0) avail += FIFOSIZE;
+    return avail;
+}
 
 void usb_audio_buff_broker(int32_t *buffi) {
     if (mic_buff_index < MIC_BUF_SIZE)
@@ -160,14 +169,22 @@ void usb_audio_buff_broker(int32_t *buffi) {
         usb_mic_buff[mic_buff_index++] = *buffi >> 24;
     }
 
-    if(fifo_read_index > fifo_write_index-4 & fifo_write_index > FIFOSIZE/2)
-        fifo_read_index = 0;
+    int32_t avail = spk_fifo_available();
+    if (!spk_primed) {
+        spk_primed = (avail >= SPK_PRIME_BYTES);
+    } else if (avail < 4) {
+        spk_primed = false; // underrun - play silence until the host has refilled the buffer
+    }
 
-    *buffi = (int32_t)usb_spk_fifo[fifo_read_index++];
-    *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 8;
-    *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 16;
-    *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 24;
-    fifo_read_index %= FIFOSIZE;
+    if (spk_primed) {
+        *buffi = (int32_t)usb_spk_fifo[fifo_read_index++];
+        *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 8;
+        *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 16;
+        *buffi |= (int32_t)usb_spk_fifo[fifo_read_index++] << 24;
+        fifo_read_index %= FIFOSIZE;
+    } else {
+        *buffi = 0;
+    }
 }
 
 void usb_audio_buff_broker_mute(int32_t *buffi) {
@@ -179,8 +196,11 @@ void usb_audio_buff_broker_mute(int32_t *buffi) {
         usb_mic_buff[mic_buff_index++] = 0;
     }
     *buffi = 0;
-    fifo_read_index+=4;
-    fifo_read_index%=FIFOSIZE;
+    // Keep draining so latency doesn't build up while muted, but never past the writer
+    if (spk_fifo_available() >= 4) {
+        fifo_read_index += 4;
+        fifo_read_index %= FIFOSIZE;
+    }
 }
 
 
@@ -269,8 +289,14 @@ bool tud_audio_tx_done_pre_load_cb(uint8_t rhport, uint8_t itf, uint8_t ep_in, u
     (void)ep_in;
     (void)cur_alt_setting;
 
-    tud_audio_write(usb_mic_buff, mic_buff_index);   //read from buffer, write to USB
-    mic_buff_index = 0;
+    uint16_t written = tud_audio_write(usb_mic_buff, mic_buff_index);   //read from buffer, write to USB
+    if (written < mic_buff_index) {
+        // Driver couldn't take everything - keep the remainder for the next frame
+        memmove(usb_mic_buff, usb_mic_buff + written, mic_buff_index - written);
+        mic_buff_index -= written;
+    } else {
+        mic_buff_index = 0;
+    }
 
     return true;
 }

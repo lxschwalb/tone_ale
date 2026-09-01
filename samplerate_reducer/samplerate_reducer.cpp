@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 #include <cstring>
 
@@ -11,11 +12,12 @@
 #define SAMPLE_RATE 48000
 #define SYSTEM_CLK  270000000
 
-int ds_factor = 1;
+volatile int ds_factor = 1;
 
 void downsampleAndUpsample(int32_t* signal, int factor, int length) {
+    // Static buffer - heap allocation is not safe inside the DMA interrupt handler
+    static int32_t downsampled_signal[BUFFSIZE / 2];
     int new_size = length / factor;
-    int32_t* downsampled_signal = new int32_t[new_size];
 
     // Downsample the signal
     for (int i = 0; i < new_size; i++) {
@@ -24,11 +26,10 @@ void downsampleAndUpsample(int32_t* signal, int factor, int length) {
 
     // Upsample the signal
     for (int i = 0; i < length; i++) {
-        signal[i] = downsampled_signal[i / factor];
+        int j = i / factor;
+        if (j >= new_size) j = new_size - 1; // last partial chunk when factor doesn't divide length
+        signal[i] = downsampled_signal[j];
     }
-
-    // Free the memory used by the temporary arrays
-    delete[] downsampled_signal;
 }
 
 void interrupt_service_routine() {

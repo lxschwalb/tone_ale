@@ -25,6 +25,7 @@ add_compile_options(-Wall
 add_subdirectory(fuzz)
 add_subdirectory(wavefolder)
 add_subdirectory(delay)
+add_subdirectory(reverb)
 add_subdirectory(cab_sim)
 add_subdirectory(rig)
 add_subdirectory(tone_ale_common)

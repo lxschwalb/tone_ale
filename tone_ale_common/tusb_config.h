@@ -33,7 +33,6 @@
 // 2 : print warning
 // 3 : print info
 #define CFG_TUSB_DEBUG 0
-#define CFG_TUSB_DEBUG_PRINTF   _debug_message
 
 //--------------------------------------------------------------------
 // COMMON CONFIGURATION
@@ -48,7 +47,6 @@
 #define UAC2_ENTITY_CLOCK               0x04
 // Speaker path
 #define UAC2_ENTITY_SPK_INPUT_TERMINAL  0x01
-#define UAC2_ENTITY_SPK_FEATURE_UNIT    0x02
 #define UAC2_ENTITY_SPK_OUTPUT_TERMINAL 0x03
 // Microphone path
 #define UAC2_ENTITY_MIC_INPUT_TERMINAL  0x11
@@ -103,11 +101,13 @@ enum
     /* Class-Specific AC Interface Header Descriptor(4.7.2) */\
     TUD_AUDIO_DESC_CS_AC(/*_bcdADC*/ 0x0200, /*_category*/ AUDIO_USB_FUNC, /*_totallen*/ TUD_AUDIO_DESC_CTRL_LEN, /*_ctrl*/ AUDIO_CTRL_NONE << AUDIO_CS_AS_INTERFACE_CTRL_LATENCY_POS),\
     /* Clock Source Descriptor(4.7.2.1) */\
-    TUD_AUDIO_DESC_CLK_SRC(/*_clkid*/ UAC2_ENTITY_CLOCK, /*_attr*/ AUDIO_CLOCK_SOURCE_ATT_EXT_CLK, /*_ctrl*/ (AUDIO_CTRL_NONE << AUDIO_CLOCK_SOURCE_CTRL_CLK_FRQ_POS)|(AUDIO_CTRL_NONE << AUDIO_CLOCK_SOURCE_CTRL_CLK_VAL_POS), /*_assocTerm*/ 0x00,  /*_stridx*/ 0x00),    \
+    /* Windows (usbaudio2.sys) requires the sample frequency control to be host-readable */\
+    TUD_AUDIO_DESC_CLK_SRC(/*_clkid*/ UAC2_ENTITY_CLOCK, /*_attr*/ AUDIO_CLOCK_SOURCE_ATT_INT_FIX_CLK, /*_ctrl*/ (AUDIO_CTRL_RW << AUDIO_CLOCK_SOURCE_CTRL_CLK_FRQ_POS)|(AUDIO_CTRL_R << AUDIO_CLOCK_SOURCE_CTRL_CLK_VAL_POS), /*_assocTerm*/ 0x00,  /*_stridx*/ 0x00),    \
     /* Input Terminal Descriptor(4.7.2.4) */\
     TUD_AUDIO_DESC_INPUT_TERM(/*_termid*/ UAC2_ENTITY_SPK_INPUT_TERMINAL, /*_termtype*/ AUDIO_TERM_TYPE_USB_STREAMING, /*_assocTerm*/ 0x00, /*_clkid*/ UAC2_ENTITY_CLOCK, /*_nchannelslogical*/ CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_SPK, /*_channelcfg*/ CFG_TUD_AUDIO_FUNC_1_ASSIGN_SPK, /*_idxchannelnames*/ 0x00, /*_ctrl*/ AUDIO_CTRL_NONE << AUDIO_IN_TERM_CTRL_CONNECTOR_POS, /*_stridx*/ 0x00),\
     /* Output Terminal Descriptor(4.7.2.5) */\
-    TUD_AUDIO_DESC_OUTPUT_TERM(/*_termid*/ UAC2_ENTITY_SPK_OUTPUT_TERMINAL, /*_termtype*/ AUDIO_TERM_TYPE_OUT_GENERIC_SPEAKER, /*_assocTerm*/ 0x00, /*_srcid*/ UAC2_ENTITY_SPK_FEATURE_UNIT, /*_clkid*/ UAC2_ENTITY_CLOCK, /*_ctrl*/ 0x0000, /*_stridx*/ 0x00),\
+    /* Source directly from the input terminal - there is no feature unit descriptor, and Windows (usbaudio2.sys) rejects a topology referencing a missing entity */\
+    TUD_AUDIO_DESC_OUTPUT_TERM(/*_termid*/ UAC2_ENTITY_SPK_OUTPUT_TERMINAL, /*_termtype*/ AUDIO_TERM_TYPE_OUT_GENERIC_SPEAKER, /*_assocTerm*/ 0x00, /*_srcid*/ UAC2_ENTITY_SPK_INPUT_TERMINAL, /*_clkid*/ UAC2_ENTITY_CLOCK, /*_ctrl*/ 0x0000, /*_stridx*/ 0x00),\
     /* Input Terminal Descriptor(4.7.2.4) */\
     TUD_AUDIO_DESC_INPUT_TERM(/*_termid*/ UAC2_ENTITY_MIC_INPUT_TERMINAL, /*_termtype*/ AUDIO_TERM_TYPE_IN_GENERIC_MIC, /*_assocTerm*/ 0x00, /*_clkid*/ UAC2_ENTITY_CLOCK, /*_nchannelslogical*/ CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_MIC, /*_channelcfg*/ CFG_TUD_AUDIO_FUNC_1_ASSIGN_MIC, /*_idxchannelnames*/ 0x00, /*_ctrl*/ AUDIO_CTRL_NONE << AUDIO_IN_TERM_CTRL_CONNECTOR_POS, /*_stridx*/ 0x00),\
     /* Output Terminal Descriptor(4.7.2.5) */\

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 
 #define BUFFSIZE    16
@@ -25,7 +26,7 @@ static int32_t rightbuff[PHASEBUFFSIZE] = {0};
 static int rightindex = 0;
 int modIndex = 0;
 
-static bool state = false;
+static volatile bool state = false;
 
 int32_t phaser(float input, int32_t* delaybuff, int* delayIndex)
 {

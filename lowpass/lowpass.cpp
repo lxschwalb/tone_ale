@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 #include <cstring>
 #include "filter_coefs.h"
@@ -12,7 +13,7 @@
 #define SAMPLE_RATE 48000
 #define SYSTEM_CLK  270000000
 
-int foot = 0;
+volatile int foot = 0;
 
 class LPF {
     public:

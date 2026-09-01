@@ -1,13 +1,15 @@
+#include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tusb.h"
 #include "tone_ale.h"
 #include "tone_ale_usb.h"
-#include "pico/multicore.h" 
+#include "pico/multicore.h"
 
 #define BUFFSIZE    16
 #define SAMPLE_RATE 48000 // has to be 48k when usb audio in use
 #define SYSTEM_CLK  270000000
 
-bool state = false;
+volatile bool state = false;
 
 void core1_entry() {
     tusb_init();

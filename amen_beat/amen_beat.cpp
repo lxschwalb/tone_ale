@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 
 #define BUFFSIZE        16
@@ -11,7 +12,7 @@
 #define SYSTEM_CLK      270000000
 #define AMENBUFFSIZE    41102
 
-static bool state = true;
+static volatile bool state = true;
 
 int32_t amen_buf[AMENBUFFSIZE] = {
     30208,
@@ -41119,7 +41120,7 @@ int32_t amen_buf[AMENBUFFSIZE] = {
 };
 
 int idx = 0;
-float gain = 0;
+volatile float gain = 0;
 
 void interrupt_service_routine() {
     juggle_buffers();

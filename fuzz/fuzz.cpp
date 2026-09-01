@@ -4,17 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 
 #define BUFFSIZE    16
 #define SAMPLE_RATE 48000
 #define GAIN        80.0
-#define CLIP_POS    4194304<<8
-#define CLIP_NEG    -4194304<<8
+#define CLIP_POS    (4194304*256)
+#define CLIP_NEG    (-4194304*256)
 #define SYSTEM_CLK  270000000
 #define GATED       true
 
-static bool state = false;
+static volatile bool state = false;
 
 int32_t fuzz(int32_t x) {
     float y = x*GAIN;            

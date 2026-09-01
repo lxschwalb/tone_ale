@@ -19,8 +19,21 @@ static int32_t *i2cv_rx_buff_ptr;
 static int32_t *i2cv_x_buff_ptr;
 static int32_t *i2cv_temp_ptr;
 
+// Rotation invariant - the crossed aliasing below is deliberate, not a bug:
+// when a block completes, the config DMA channels re-point the data channels
+// by dereferencing these pointers-to-pointers, and they run (via chain trigger,
+// at hardware speed) BEFORE the ISR gets a chance to rotate anything. They
+// therefore read the PRE-rotation values, which are exactly the POST-rotation
+// targets of juggle_buffers():
+//   next tx buffer = old x  (the block the effect just finished processing)
+//   next rx buffer = old tx (the block that has just finished playing)
+// So the hardware performs the rotation itself with deterministic latency;
+// juggle_buffers() only keeps the variables in sync for mutable_data().
 static int32_t **i2cv_tx_buff_ptr_ptr = &i2cv_x_buff_ptr;
 static int32_t **i2cv_rx_buff_ptr_ptr = &i2cv_tx_buff_ptr;
+
+static int32_t i2cv_buffsize = 0;
+static volatile uint32_t missed_deadline_count = 0;
 
 static int dma_out_chan = dma_claim_unused_channel(true);
 static int dma_in_chan = dma_claim_unused_channel(true);
@@ -29,6 +42,17 @@ static int dma_in_conf_chan = dma_claim_unused_channel(true);
 
 void juggle_buffers() {
     dma_hw->ints0 = 1u << dma_in_chan;
+
+    // Phase check: by the time this ISR runs, the in-DMA should already be
+    // filling the old tx buffer (see the rotation invariant above). If it
+    // isn't, this interrupt was serviced more than a block period late and the
+    // software pointers are out of phase with the hardware - the effect will
+    // touch live DMA buffers until the next boundary. Count it so glitches are
+    // measurable via i2cv_missed_deadlines().
+    uint32_t wr = dma_hw->ch[dma_in_chan].write_addr;
+    if (wr < (uint32_t)i2cv_tx_buff_ptr || wr > (uint32_t)(i2cv_tx_buff_ptr + i2cv_buffsize)) {
+        missed_deadline_count++;
+    }
 
 	i2cv_temp_ptr = i2cv_tx_buff_ptr;
 	i2cv_tx_buff_ptr = i2cv_x_buff_ptr;
@@ -50,6 +74,7 @@ void tone_ale_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_rou
     i2cv_tx_buff_ptr = buff;
     i2cv_rx_buff_ptr = &buff[buffsize];
     i2cv_x_buff_ptr = &buff[buffsize*2];
+    i2cv_buffsize = buffsize;
 
     // Set up state machine to send I2CV data in and out
     uint i2cv_offset = pio_add_program(pio0, &i2cv_bidirectional_program);
@@ -57,7 +82,10 @@ void tone_ale_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_rou
     i2cv_bidirectional_program_init(pio0, i2cv_sm, i2cv_offset, I2CV_OUT_PIN, WS_PIN, I2CV_IN_PIN);
     pio_sm_set_enabled(pio0, i2cv_sm, true);
 
-    // Set up DMA for efficient transfers of buffers
+    // Set up DMA for efficient transfers of buffers.
+    // Note: the out and in channels are paced by the same PIO state machine and
+    // move the same number of words per block, so they complete in lockstep -
+    // the buffer rotation relies on this.
     dma_channel_config c_out = dma_channel_get_default_config(dma_out_chan);
     channel_config_set_transfer_data_size(&c_out, DMA_SIZE_32);
     channel_config_set_read_increment(&c_out, true);
@@ -76,14 +104,14 @@ void tone_ale_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_rou
     channel_config_set_transfer_data_size(&c_out_conf, DMA_SIZE_32);
     channel_config_set_read_increment(&c_out_conf, false);
     channel_config_set_write_increment(&c_out_conf, false);
-    channel_config_set_dreq(&c_out_conf, 0x3f);
+    channel_config_set_dreq(&c_out_conf, DREQ_FORCE); // unpaced - runs immediately when chained
     channel_config_set_chain_to(&c_out_conf, dma_out_chan);
 
     dma_channel_config c_in_conf = dma_channel_get_default_config(dma_in_conf_chan);
     channel_config_set_transfer_data_size(&c_in_conf, DMA_SIZE_32);
     channel_config_set_read_increment(&c_in_conf, false);
     channel_config_set_write_increment(&c_in_conf, false);
-    channel_config_set_dreq(&c_in_conf, 0x3f);
+    channel_config_set_dreq(&c_in_conf, DREQ_FORCE); // unpaced - runs immediately when chained
     channel_config_set_chain_to(&c_in_conf, dma_in_chan);
 
     dma_channel_configure(
@@ -138,4 +166,8 @@ void tone_ale_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_rou
 
 int32_t * mutable_data() {
     return i2cv_x_buff_ptr;
+}
+
+uint32_t i2cv_missed_deadlines() {
+    return missed_deadline_count;
 }

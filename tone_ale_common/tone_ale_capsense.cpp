@@ -12,7 +12,7 @@
 #define CAP_SEND_PIN        17
 #define CAP_SENSE_PIN       18
 
-int sm;
+static int sm;
 
 void tone_ale_capsense_setup() {
     sm = pio_claim_unused_sm(pio0, true);
@@ -53,6 +53,10 @@ float Capsense::capsense_return_percentage_of_max() {
     }
     if(x<min) {
         min = x;
+    }
+
+    if(max == min) {
+        return 0.0f; // avoid 0/0 until readings have spread out after reset()
     }
 
     return (x-min) / (float) (max-min);

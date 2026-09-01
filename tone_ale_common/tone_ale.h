@@ -9,6 +9,7 @@ void juggle_buffers();
 void tone_ale_clk_setup(float sample_rate, float system_clk);
 void tone_ale_i2cv_setup(int32_t *buff, int buffsize, void interrupt_service_routine());
 int32_t * mutable_data();
+uint32_t i2cv_missed_deadlines(); // blocks where the ISR ran over a block period late (audio likely glitched)
 void set_led(bool state);
 int32_t clip_shift(int32_t x);
 

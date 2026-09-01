@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 #include "filter_coefs.h"
 
@@ -12,7 +13,7 @@
 #define SYSTEM_CLK      270000000
 #define ATTENUATION     4
 
-bool state = true;
+volatile bool state = true;
 class FIR {
     public:
         int32_t inbuff[CAB_BUFFSIZE];

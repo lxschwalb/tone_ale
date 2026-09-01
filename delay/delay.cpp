@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 
 #define BUFFSIZE        16
@@ -12,7 +13,7 @@
 #define DELAYBUFFSIZE   32768
 #define FEEDBACK        true
 
-static bool state = true;
+static volatile bool state = true;
 
 int32_t add_delay(int32_t x) {
     static int32_t delaybuff[DELAYBUFFSIZE] = {0};

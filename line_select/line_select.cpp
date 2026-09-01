@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 
 #define BUFFSIZE    16
 #define SAMPLE_RATE 48000
 #define SYSTEM_CLK  270000000
 
-static bool state = false;
+static volatile bool state = false;
 
 void interrupt_service_routine() {
     juggle_buffers();

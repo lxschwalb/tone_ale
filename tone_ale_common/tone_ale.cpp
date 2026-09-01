@@ -17,8 +17,8 @@
 #define DAC_XSMT_PIN    23
 
 
-#define __24bitmax__    8388000/2
-#define __24bitmin__    -8388000/2
+#define __24bitmax__    (8388000/2)
+#define __24bitmin__    (-8388000/2)
 
 void tone_ale_pins_setup() {
     gpio_init(LED_PIN);
@@ -58,7 +58,8 @@ bool get_led(){
 }
 
 int32_t clip_shift(int32_t x) {
-    if(x>__24bitmax__) {return __24bitmax__<<8;}
-    if(x<__24bitmin__) {return __24bitmin__<<8;}
-    else {return x<<8;}
+    // *256 rather than <<8 because left-shifting negative values is undefined behaviour
+    if(x>__24bitmax__) {return __24bitmax__*256;}
+    if(x<__24bitmin__) {return __24bitmin__*256;}
+    else {return x*256;}
 }

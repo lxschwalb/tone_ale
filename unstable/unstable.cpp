@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 #include <cstring>
 
@@ -11,7 +12,7 @@
 #define SAMPLE_RATE 48000
 #define SYSTEM_CLK  270000000
 
-bool state = true;
+volatile bool state = true;
 
 class Unstable {
     public:

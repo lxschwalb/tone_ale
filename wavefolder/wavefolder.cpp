@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 #include "tone_ale.h"
 
 #define BUFFSIZE    16
@@ -16,7 +17,7 @@
 constexpr float double_clip_pos = CLIP_POS*2;
 constexpr float double_clip_neg = CLIP_NEG*2;
 
-static bool state = false;
+static volatile bool state = false;
 
 float fold(float x) {
     if(x>CLIP_POS){
